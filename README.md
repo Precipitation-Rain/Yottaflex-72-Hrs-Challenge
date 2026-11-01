@@ -11,6 +11,9 @@ A small, reproducible pipeline that turns raw **transaction data** into **ML fea
 customer-churn model. It **prevents target leakage**, follows clear **point-in-time rules**, and
 uses **one feature definition for both training and inference**.
 
+> **AI usage:** this project was built with the help of Claude Code. See [AI_USAGE.md](AI_USAGE.md)
+> for what AI did and what I did.
+
 Everything runs locally with Python and DuckDB (a database stored in a single file). There are no servers, no cloud services and no credentials.
 
 ---
@@ -148,6 +151,7 @@ Every column is described in [data_dictionary.md](data_dictionary.md).
 ```
 ├── README.md                 this file
 ├── data_dictionary.md        every table and column
+├── AI_USAGE.md               how AI was used, and what I reviewed and validated
 ├── docs/design_notes.md      design choices and trade-offs
 ├── config.yaml               paths, as_of_dates, label window, validation limits
 ├── requirements.txt / pytest.ini
