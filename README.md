@@ -315,10 +315,15 @@ Measured on a Windows laptop with Python 3.13 and DuckDB 1.1.3. Stage timings ar
 |---|---|---|---|---|---|---|---|
 | sample | 5,000 | 20 | 1.31 s | 0.05 s | 1.13 s | 0.05 s | 0.06 s |
 | rerun (all skipped) | 0 | 20 | 0.23 s | — | 0.02 s | 0.06 s | 0.05 s |
+| large | 100,000 | 21 | 4.29 s | 0.12 s | 3.45 s | 0.33 s | 0.34 s |
+| large rerun (all skipped) | 0 | 21 | 0.67 s | 0.07 s | 0.02 s | 0.22 s | 0.32 s |
 
-The dataset size is configurable. To create a larger run, use for example:
+The 100K run: 95,700 loaded, 4,300 rejected, 16,221 feature rows, all 12 reconciliation checks PASS
+(3,904 expected rejects = 3,904 actual). 20× more data took only about 3× longer.
+
+The dataset size is configurable. To reproduce the larger run:
 `python -m src.generate_data --rows 100000 --out data/large --labels-dir data/large_labels`
-then `python -m src.run_pipeline --input-dir data/large --db-path output/large.duckdb --expected-rejects data/large_labels/expected_rejects.csv`.
+then `python -m src.run_pipeline --input-dir data/large --db-path output/large/large.duckdb --output-dir output/large --expected-rejects data/large_labels/expected_rejects.csv`.
 
 Loading transactions takes most of the time, about 55 ms per file. Most of that is per-file work:
 reading the file, fetching all already-loaded IDs for the duplicate check, and moving DataFrames

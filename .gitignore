@@ -31,6 +31,7 @@ output/logs/
 # Large generated dataset (rebuild with: python -m src.generate_data --rows 100000 ...)
 data/large/
 data/large_labels/
+output/large/
 
 # IDE / editor
 .vscode/
