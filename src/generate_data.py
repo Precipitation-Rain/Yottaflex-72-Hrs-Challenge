@@ -62,7 +62,6 @@ class Generator:
         self.next_id = 1
         self.expected = []   # answer key rows
 
-    # ---------------------------------------------------------------- customers
     def make_customers(self) -> list[dict]:
         rng = self.rng
         n = max(50, self.rows // 16)
@@ -85,7 +84,6 @@ class Generator:
             })
         return self.customers
 
-    # ---------------------------------------------------------------- transactions
     def _new_id(self) -> str:
         tid = f"T{self.next_id:07d}"
         self.next_id += 1
@@ -177,7 +175,6 @@ class Generator:
     def _cycle(self, values, key):
         return [values[i % len(values)] for i in range(self.counts[key])]
 
-    # ---------------------------------------------------------------- write
     def write(self, out: Path, labels_dir: Path) -> dict:
         out.mkdir(parents=True, exist_ok=True)
         labels_dir.mkdir(parents=True, exist_ok=True)

@@ -10,9 +10,11 @@ FROM pipeline_runs ORDER BY started_at DESC LIMIT 5
 
 ```
                      run_id      mode          status reconciliation_status  input_rows  loaded_rows  rejected_rows  feature_rows  label_rows  duration_seconds
+run_20261101T105543Z_19d084 inference PARTIAL_SUCCESS                  PASS           0            0              0           312           0             0.207
+run_20261101T105527Z_6361b2     train PARTIAL_SUCCESS                  PASS           0            0              0           817         519             0.221
+run_20261101T105508Z_155724     train PARTIAL_SUCCESS                  PASS           0            0              0           817         519             0.615
 run_20261101T102826Z_9ce07c inference PARTIAL_SUCCESS                  PASS           0            0              0           312           0             0.189
 run_20261101T102825Z_e37c3a     train PARTIAL_SUCCESS                  PASS           0            0              0           817         519             0.229
-run_20261101T102822Z_a18fda     train PARTIAL_SUCCESS                  PASS        5000         4785            215           817         519             1.917
 ```
 
 ## Rejects by reason
@@ -30,15 +32,15 @@ transaction       unknown_customer_id 20
 transaction       amount_out_of_range 15
 transaction         invalid_timestamp 15
 transaction         txn_before_signup 10
-transaction          invalid_txn_type 10
-transaction invalid_merchant_category 10
 transaction            invalid_amount 10
+transaction invalid_merchant_category 10
+transaction          invalid_txn_type 10
 transaction     ingested_before_event 10
 transaction             malformed_row 10
-   customer     duplicate_customer_id  1
-   customer              invalid_date  1
        file           schema_mismatch  1
+   customer              invalid_date  1
    customer    missing_required_field  1
+   customer     duplicate_customer_id  1
 ```
 
 ## Trace three rejects back to their source line

@@ -1,6 +1,6 @@
 {
   "run": {
-    "run_id": "run_20261101T102825Z_e37c3a",
+    "run_id": "run_20261101T105527Z_6361b2",
     "mode": "train",
     "status": "PARTIAL_SUCCESS",
     "files_seen": 20,
@@ -14,9 +14,9 @@
     "label_rows": 519,
     "reconciliation_status": "PASS",
     "error_message": null,
-    "ended_at": "2026-11-01 10:28:25",
-    "duration_seconds": 0.229,
-    "stage_timings": "{\"customers\": 0.045, \"transactions\": 0.015, \"features_labels\": 0.061, \"reconciliation\": 0.062}"
+    "ended_at": "2026-11-01 10:55:27",
+    "duration_seconds": 0.221,
+    "stage_timings": "{\"customers\": 0.04, \"transactions\": 0.021, \"features_labels\": 0.076, \"reconciliation\": 0.053}"
   },
   "status": "PASS",
   "checks": [
@@ -58,8 +58,8 @@
     {
       "check": "primary_key_unique_customer_features",
       "status": "PASS",
-      "expected": 817,
-      "actual": 817,
+      "expected": 1129,
+      "actual": 1129,
       "detail": "key=(customer_id, as_of_date)"
     },
     {
@@ -79,15 +79,15 @@
     {
       "check": "features_cover_all_eligible_customers",
       "status": "PASS",
-      "expected": 817,
-      "actual": 817,
+      "expected": 1129,
+      "actual": 1129,
       "detail": ""
     },
     {
       "check": "point_in_time_feature_totals_match_recompute",
       "status": "PASS",
-      "expected": "count90d=6479",
-      "actual": "count90d=6479",
+      "expected": "count90d=9815",
+      "actual": "count90d=9815",
       "detail": ""
     },
     {

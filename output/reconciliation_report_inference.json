@@ -1,6 +1,6 @@
 {
   "run": {
-    "run_id": "run_20261101T102826Z_9ce07c",
+    "run_id": "run_20261101T105543Z_19d084",
     "mode": "inference",
     "status": "PARTIAL_SUCCESS",
     "files_seen": 20,
@@ -14,9 +14,9 @@
     "label_rows": 0,
     "reconciliation_status": "PASS",
     "error_message": null,
-    "ended_at": "2026-11-01 10:28:27",
-    "duration_seconds": 0.189,
-    "stage_timings": "{\"customers\": 0.034, \"transactions\": 0.013, \"features_labels\": 0.049, \"reconciliation\": 0.045}"
+    "ended_at": "2026-11-01 10:55:43",
+    "duration_seconds": 0.207,
+    "stage_timings": "{\"customers\": 0.04, \"transactions\": 0.025, \"features_labels\": 0.054, \"reconciliation\": 0.061}"
   },
   "status": "PASS",
   "checks": [
