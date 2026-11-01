@@ -1,0 +1,200 @@
+source_file,source_line_number,expected_reason,injected_issue
+customers.csv,314,duplicate_customer_id,exact duplicate customer row
+customers.csv,315,invalid_date,signup_date not ISO
+customers.csv,316,missing_required_field,blank customer_id
+transactions_2026-01-01.csv,18,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-01.csv,56,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-01.csv,75,invalid_timestamp,txn_ts=31/01/2026 10:00
+transactions_2026-01-01.csv,127,invalid_txn_type,txn_type=chargeback
+transactions_2026-01-01.csv,227,missing_required_field,blank amount
+transactions_2026-01-08.csv,11,invalid_timestamp,txn_ts=31/01/2026 10:00
+transactions_2026-01-08.csv,78,txn_before_signup,txn_ts before signup_date
+transactions_2026-01-08.csv,157,invalid_txn_type,txn_type=transfer
+transactions_2026-01-08.csv,165,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-08.csv,191,invalid_timestamp,txn_ts=2026-13-45T10:00:00Z
+transactions_2026-01-08.csv,256,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-08.csv,263,amount_out_of_range,amount=0
+transactions_2026-01-08.csv,304,duplicate_transaction_id,same-file re-send
+transactions_2026-01-08.csv,305,duplicate_transaction_id,same-file re-send
+transactions_2026-01-08.csv,306,duplicate_transaction_id,same-file re-send
+transactions_2026-01-15.csv,85,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-15.csv,139,invalid_amount,amount=$40
+transactions_2026-01-15.csv,176,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-01-15.csv,188,txn_before_signup,txn_ts before signup_date
+transactions_2026-01-15.csv,210,invalid_merchant_category,merchant_category=crypto
+transactions_2026-01-15.csv,239,txn_before_signup,txn_ts before signup_date
+transactions_2026-01-15.csv,251,invalid_amount,"amount=12,50"
+transactions_2026-01-22.csv,21,amount_out_of_range,amount=100000.01
+transactions_2026-01-22.csv,65,txn_before_signup,txn_ts before signup_date
+transactions_2026-01-22.csv,91,invalid_txn_type,txn_type=chargeback
+transactions_2026-01-22.csv,157,invalid_timestamp,txn_ts=31/01/2026 10:00
+transactions_2026-01-22.csv,158,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-01-22.csv,192,malformed_row,missing field
+transactions_2026-01-22.csv,203,invalid_timestamp,txn_ts=2026-13-45T10:00:00Z
+transactions_2026-01-22.csv,236,invalid_timestamp,txn_ts=2026-02-30T25:61:00Z
+transactions_2026-01-22.csv,248,missing_required_field,blank transaction_id
+transactions_2026-01-22.csv,278,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-01-22.csv,303,duplicate_transaction_id,cross-file re-send
+transactions_2026-01-29.csv,19,invalid_timestamp,txn_ts=yesterday
+transactions_2026-01-29.csv,78,missing_required_field,blank customer_id
+transactions_2026-01-29.csv,89,amount_out_of_range,amount=0
+transactions_2026-01-29.csv,106,invalid_txn_type,txn_type=PURCHASE
+transactions_2026-01-29.csv,131,txn_before_signup,txn_ts before signup_date
+transactions_2026-01-29.csv,192,invalid_amount,amount=abc
+transactions_2026-01-29.csv,203,missing_required_field,blank transaction_id
+transactions_2026-01-29.csv,260,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-01-29.csv,270,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-05.csv,4,amount_out_of_range,amount=-15.50
+transactions_2026-02-05.csv,123,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-02-05.csv,178,invalid_txn_type,txn_type=PURCHASE
+transactions_2026-02-05.csv,204,missing_required_field,blank txn_ts
+transactions_2026-02-05.csv,211,invalid_merchant_category,merchant_category=gambling
+transactions_2026-02-05.csv,276,duplicate_transaction_id,same-file re-send
+transactions_2026-02-05.csv,277,duplicate_transaction_id,same-file re-send
+transactions_2026-02-05.csv,278,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-12.csv,8,missing_required_field,blank customer_id
+transactions_2026-02-12.csv,15,malformed_row,extra field
+transactions_2026-02-12.csv,39,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-02-12.csv,57,invalid_amount,amount=N/A
+transactions_2026-02-12.csv,64,invalid_timestamp,txn_ts=2026-13-45T10:00:00Z
+transactions_2026-02-12.csv,76,invalid_timestamp,txn_ts=yesterday
+transactions_2026-02-12.csv,129,missing_required_field,blank amount
+transactions_2026-02-12.csv,135,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-02-12.csv,154,amount_out_of_range,amount=100000.01
+transactions_2026-02-12.csv,176,invalid_timestamp,txn_ts=yesterday
+transactions_2026-02-12.csv,276,missing_required_field,blank amount
+transactions_2026-02-12.csv,288,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,289,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,290,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-12.csv,291,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,292,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,293,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,294,duplicate_transaction_id,same-file re-send
+transactions_2026-02-12.csv,295,duplicate_transaction_id,same-file re-send
+transactions_2026-02-19.csv,112,missing_required_field,blank txn_ts
+transactions_2026-02-19.csv,152,invalid_txn_type,txn_type=PURCHASE
+transactions_2026-02-19.csv,269,invalid_timestamp,txn_ts=yesterday
+transactions_2026-02-19.csv,295,invalid_txn_type,txn_type=transfer
+transactions_2026-02-19.csv,298,duplicate_transaction_id,same-file re-send
+transactions_2026-02-19.csv,299,duplicate_transaction_id,same-file re-send
+transactions_2026-02-19.csv,300,duplicate_transaction_id,same-file re-send
+transactions_2026-02-19.csv,301,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-26.csv,4,invalid_timestamp,txn_ts=2026-02-30T25:61:00Z
+transactions_2026-02-26.csv,46,invalid_merchant_category,merchant_category=crypto
+transactions_2026-02-26.csv,90,invalid_merchant_category,merchant_category=gambling
+transactions_2026-02-26.csv,118,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-02-26.csv,120,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-02-26.csv,125,missing_required_field,blank transaction_id
+transactions_2026-02-26.csv,157,txn_before_signup,txn_ts before signup_date
+transactions_2026-02-26.csv,162,amount_out_of_range,amount=100000.01
+transactions_2026-02-26.csv,216,malformed_row,extra field
+transactions_2026-02-26.csv,249,malformed_row,extra field
+transactions_2026-02-26.csv,262,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-02-26.csv,282,invalid_amount,"amount=12,50"
+transactions_2026-02-26.csv,287,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-02-26.csv,305,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-26.csv,306,duplicate_transaction_id,cross-file re-send
+transactions_2026-02-26.csv,307,duplicate_transaction_id,same-file re-send
+transactions_2026-02-26.csv,308,duplicate_transaction_id,same-file re-send
+transactions_2026-02-26.csv,309,duplicate_transaction_id,same-file re-send
+transactions_2026-02-26.csv,310,duplicate_transaction_id,same-file re-send
+transactions_2026-02-26.csv,311,duplicate_transaction_id,same-file re-send
+transactions_2026-03-05.csv,7,malformed_row,missing field
+transactions_2026-03-05.csv,71,invalid_merchant_category,merchant_category=crypto
+transactions_2026-03-05.csv,97,txn_before_signup,txn_ts before signup_date
+transactions_2026-03-05.csv,178,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-03-05.csv,242,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-05.csv,247,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-03-05.csv,249,missing_required_field,blank txn_type
+transactions_2026-03-05.csv,277,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-03-05.csv,279,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-05.csv,300,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-05.csv,332,duplicate_transaction_id,same-file re-send
+transactions_2026-03-05.csv,333,duplicate_transaction_id,cross-file re-send
+transactions_2026-03-05.csv,334,duplicate_transaction_id,same-file re-send
+transactions_2026-03-05.csv,335,duplicate_transaction_id,same-file re-send
+transactions_2026-03-05.csv,336,duplicate_transaction_id,same-file re-send
+transactions_2026-03-05_v2.csv,1,schema_mismatch,column amount renamed to amount_usd
+transactions_2026-03-12.csv,53,amount_out_of_range,amount=2500000
+transactions_2026-03-12.csv,73,invalid_amount,amount=abc
+transactions_2026-03-12.csv,137,invalid_amount,amount=N/A
+transactions_2026-03-12.csv,155,malformed_row,extra field
+transactions_2026-03-12.csv,171,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-12.csv,179,invalid_amount,amount=$40
+transactions_2026-03-12.csv,183,invalid_timestamp,txn_ts=2026-02-30T25:61:00Z
+transactions_2026-03-12.csv,251,invalid_amount,"amount=12,50"
+transactions_2026-03-12.csv,261,invalid_merchant_category,merchant_category=Grocery
+transactions_2026-03-12.csv,263,invalid_merchant_category,merchant_category=Grocery
+transactions_2026-03-12.csv,320,missing_required_field,blank amount
+transactions_2026-03-12.csv,324,duplicate_transaction_id,cross-file re-send
+transactions_2026-03-12.csv,325,duplicate_transaction_id,same-file re-send
+transactions_2026-03-19.csv,4,amount_out_of_range,amount=2500000
+transactions_2026-03-19.csv,10,txn_before_signup,txn_ts before signup_date
+transactions_2026-03-19.csv,75,amount_out_of_range,amount=2500000
+transactions_2026-03-19.csv,104,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-19.csv,142,missing_required_field,blank amount
+transactions_2026-03-19.csv,172,missing_required_field,blank txn_type
+transactions_2026-03-19.csv,195,invalid_merchant_category,merchant_category=gambling
+transactions_2026-03-19.csv,199,missing_required_field,blank txn_type
+transactions_2026-03-19.csv,213,missing_required_field,blank txn_ts
+transactions_2026-03-19.csv,274,duplicate_transaction_id,same-file re-send
+transactions_2026-03-26.csv,9,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-03-26.csv,34,invalid_txn_type,txn_type=transfer
+transactions_2026-03-26.csv,60,missing_required_field,blank transaction_id
+transactions_2026-03-26.csv,92,malformed_row,missing field
+transactions_2026-03-26.csv,150,txn_before_signup,txn_ts before signup_date
+transactions_2026-03-26.csv,181,amount_out_of_range,amount=100000.01
+transactions_2026-03-26.csv,231,missing_required_field,blank txn_ts
+transactions_2026-03-26.csv,271,duplicate_transaction_id,cross-file re-send
+transactions_2026-03-26.csv,272,duplicate_transaction_id,same-file re-send
+transactions_2026-03-26.csv,273,duplicate_transaction_id,same-file re-send
+transactions_2026-03-26.csv,274,duplicate_transaction_id,same-file re-send
+transactions_2026-03-26.csv,275,duplicate_transaction_id,same-file re-send
+transactions_2026-04-02.csv,10,amount_out_of_range,amount=-15.50
+transactions_2026-04-02.csv,22,malformed_row,missing field
+transactions_2026-04-02.csv,140,malformed_row,extra field
+transactions_2026-04-02.csv,168,txn_before_signup,txn_ts before signup_date
+transactions_2026-04-02.csv,191,missing_required_field,blank customer_id
+transactions_2026-04-02.csv,273,invalid_timestamp,txn_ts=31/01/2026 10:00
+transactions_2026-04-02.csv,285,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-09.csv,44,invalid_timestamp,txn_ts=2026-13-45T10:00:00Z
+transactions_2026-04-09.csv,68,amount_out_of_range,amount=-15.50
+transactions_2026-04-09.csv,75,missing_required_field,blank txn_type
+transactions_2026-04-09.csv,123,missing_required_field,blank transaction_id
+transactions_2026-04-09.csv,140,amount_out_of_range,amount=-15.50
+transactions_2026-04-09.csv,199,invalid_merchant_category,merchant_category=Grocery
+transactions_2026-04-09.csv,232,ingested_before_event,ingested_at earlier than txn_ts
+transactions_2026-04-09.csv,314,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-09.csv,315,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-16.csv,22,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-04-16.csv,41,invalid_txn_type,txn_type=PURCHASE
+transactions_2026-04-16.csv,45,missing_required_field,blank txn_type
+transactions_2026-04-16.csv,91,invalid_amount,amount=abc
+transactions_2026-04-16.csv,132,missing_required_field,blank customer_id
+transactions_2026-04-16.csv,156,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-04-16.csv,213,amount_out_of_range,amount=0
+transactions_2026-04-16.csv,279,invalid_merchant_category,merchant_category=gambling
+transactions_2026-04-16.csv,289,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-16.csv,290,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-16.csv,291,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-16.csv,292,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,19,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-04-23.csv,52,unknown_customer_id,customer_id not in customers.csv
+transactions_2026-04-23.csv,166,invalid_txn_type,txn_type=chargeback
+transactions_2026-04-23.csv,202,amount_out_of_range,amount=0
+transactions_2026-04-23.csv,214,malformed_row,missing field
+transactions_2026-04-23.csv,241,missing_required_field,blank txn_ts
+transactions_2026-04-23.csv,264,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,265,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,266,duplicate_transaction_id,same-file re-send
+transactions_2026-04-23.csv,267,duplicate_transaction_id,same-file re-send
+transactions_2026-04-23.csv,268,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,269,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,270,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-23.csv,271,duplicate_transaction_id,same-file re-send
+transactions_2026-04-30.csv,37,missing_required_field,blank customer_id
+transactions_2026-04-30.csv,55,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-30.csv,56,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-30.csv,57,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-30.csv,58,duplicate_transaction_id,cross-file re-send
+transactions_2026-04-30.csv,59,duplicate_transaction_id,cross-file re-send

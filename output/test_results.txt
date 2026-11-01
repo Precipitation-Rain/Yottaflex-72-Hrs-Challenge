@@ -1,0 +1,49 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-8.3.4, pluggy-1.7.0 -- D:\Study\Yottaflex Challenge\.venv\Scripts\python.exe
+rootdir: D:\Study\Yottaflex Challenge
+configfile: pytest.ini
+testpaths: tests
+collecting ... collected 40 items
+
+tests/test_features.py::test_feature_values_are_exact PASSED             [  2%]
+tests/test_features.py::test_no_target_leakage_future_data_does_not_change_features PASSED [  5%]
+tests/test_features.py::test_late_arriving_txn_is_invisible_until_it_was_ingested PASSED [  7%]
+tests/test_features.py::test_txn_exactly_at_as_of_is_excluded PASSED     [ 10%]
+tests/test_features.py::test_signup_rules PASSED                         [ 12%]
+tests/test_features.py::test_labels_look_forward_and_skip_immature_windows PASSED [ 15%]
+tests/test_features.py::test_training_and_inference_produce_identical_features PASSED [ 17%]
+tests/test_features.py::test_inference_requires_as_of PASSED             [ 20%]
+tests/test_generator.py::test_same_seed_same_files PASSED                [ 22%]
+tests/test_generator.py::test_end_to_end_on_generated_data_matches_answer_key PASSED [ 25%]
+tests/test_idempotency.py::test_rerun_same_input_creates_no_duplicates PASSED [ 27%]
+tests/test_idempotency.py::test_corrected_file_replaces_previous_version PASSED [ 30%]
+tests/test_idempotency.py::test_partial_failure_then_retry_matches_clean_run PASSED [ 32%]
+tests/test_idempotency.py::test_run_log_records_metrics PASSED           [ 35%]
+tests/test_idempotency.py::test_reconciliation_detects_duplicate_keys[stg_transactions] PASSED [ 37%]
+tests/test_idempotency.py::test_reconciliation_detects_duplicate_keys[customer_features] PASSED [ 40%]
+tests/test_validation.py::test_happy_path_loads_everything PASSED        [ 42%]
+tests/test_validation.py::test_empty_batch_header_only PASSED            [ 45%]
+tests/test_validation.py::test_no_transaction_files_and_zero_byte_file PASSED [ 47%]
+tests/test_validation.py::test_malformed_rows_are_rejected_with_line_numbers PASSED [ 50%]
+tests/test_validation.py::test_missing_required_fields_and_nullable_columns PASSED [ 52%]
+tests/test_validation.py::test_invalid_values_are_rejected[override0-invalid_timestamp] PASSED [ 55%]
+tests/test_validation.py::test_invalid_values_are_rejected[override1-invalid_timestamp] PASSED [ 57%]
+tests/test_validation.py::test_invalid_values_are_rejected[override2-invalid_timestamp] PASSED [ 60%]
+tests/test_validation.py::test_invalid_values_are_rejected[override3-invalid_amount] PASSED [ 62%]
+tests/test_validation.py::test_invalid_values_are_rejected[override4-invalid_amount] PASSED [ 65%]
+tests/test_validation.py::test_invalid_values_are_rejected[override5-amount_out_of_range] PASSED [ 67%]
+tests/test_validation.py::test_invalid_values_are_rejected[override6-amount_out_of_range] PASSED [ 70%]
+tests/test_validation.py::test_invalid_values_are_rejected[override7-amount_out_of_range] PASSED [ 72%]
+tests/test_validation.py::test_invalid_values_are_rejected[override8-invalid_txn_type] PASSED [ 75%]
+tests/test_validation.py::test_invalid_values_are_rejected[override9-invalid_merchant_category] PASSED [ 77%]
+tests/test_validation.py::test_invalid_values_are_rejected[override10-ingested_before_event] PASSED [ 80%]
+tests/test_validation.py::test_invalid_values_are_rejected[override11-unknown_customer_id] PASSED [ 82%]
+tests/test_validation.py::test_amount_boundaries_are_accepted PASSED     [ 85%]
+tests/test_validation.py::test_duplicates_within_and_across_files PASSED [ 87%]
+tests/test_validation.py::test_invalid_first_copy_does_not_block_valid_second_copy PASSED [ 90%]
+tests/test_validation.py::test_bad_customer_rows PASSED                  [ 92%]
+tests/test_validation.py::test_schema_change_missing_column_quarantines_file PASSED [ 95%]
+tests/test_validation.py::test_schema_change_extra_and_reordered_columns_still_load PASSED [ 97%]
+tests/test_validation.py::test_missing_customers_file_fails_run_with_reason PASSED [100%]
+
+============================= 40 passed in 28.68s =============================

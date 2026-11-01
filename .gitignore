@@ -1,0 +1,44 @@
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets / local settings (none are used now, ignored just in case)
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+credentials.*
+
+# Database file (can be rebuilt by running the pipeline)
+output/*.duckdb
+output/*.duckdb.wal
+
+# Run logs (new file on every run)
+output/logs/
+
+# Large generated dataset (rebuild with: python -m src.generate_data --rows 100000 ...)
+data/large/
+data/large_labels/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

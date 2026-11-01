@@ -1,0 +1,23 @@
+# paths are relative to the project folder
+
+paths:
+  input_dir: data/sample
+  customers_file: customers.csv
+  transactions_pattern: "transactions_*.csv"
+  expected_rejects: data/labels/expected_rejects.csv
+  db_path: output/feature_store.duckdb
+  output_dir: output
+
+features:
+  # snapshot dates used for training
+  as_of_dates: ["2026-02-01", "2026-03-01", "2026-04-01"]
+
+labels:
+  # churn = no purchase in the next N days
+  churn_window_days: 30
+
+validation:
+  max_amount: 100000.00
+  allowed_txn_types: [purchase, refund]
+  allowed_merchant_categories: [grocery, electronics, fashion, travel, dining, utilities]
+  late_arrival_threshold_hours: 24   # only used for the is_late flag

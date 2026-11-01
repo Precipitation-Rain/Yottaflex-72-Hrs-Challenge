@@ -1,0 +1,27 @@
+{
+  "seed": 42,
+  "requested_rows": 5000,
+  "transaction_rows_written": 5000,
+  "transaction_files": 20,
+  "customers_written": 315,
+  "valid_transactions": 4785,
+  "injected": {
+    "duplicate": 60,
+    "missing_field": 25,
+    "invalid_timestamp": 15,
+    "invalid_amount": 10,
+    "amount_out_of_range": 15,
+    "invalid_txn_type": 10,
+    "invalid_category": 10,
+    "ingested_before_event": 10,
+    "unknown_customer": 20,
+    "before_signup": 10,
+    "malformed": 10,
+    "schema_drift_rows": 20
+  },
+  "expected_rejects": 199,
+  "txn_ts_range": [
+    "2026-01-01T00:00:00Z",
+    "2026-05-01T00:00:00Z"
+  ]
+}

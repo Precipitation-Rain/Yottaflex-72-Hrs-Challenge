@@ -1,0 +1,108 @@
+{
+  "run": {
+    "run_id": "run_20261101T102826Z_9ce07c",
+    "mode": "inference",
+    "status": "PARTIAL_SUCCESS",
+    "files_seen": 20,
+    "files_processed": 0,
+    "files_skipped": 20,
+    "files_quarantined": 1,
+    "input_rows": 0,
+    "loaded_rows": 0,
+    "rejected_rows": 0,
+    "feature_rows": 312,
+    "label_rows": 0,
+    "reconciliation_status": "PASS",
+    "error_message": null,
+    "ended_at": "2026-11-01 10:28:27",
+    "duration_seconds": 0.189,
+    "stage_timings": "{\"customers\": 0.034, \"transactions\": 0.013, \"features_labels\": 0.049, \"reconciliation\": 0.045}"
+  },
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "row_count_source_equals_loaded_plus_rejected",
+      "status": "PASS",
+      "expected": 4980,
+      "actual": 4980,
+      "detail": "excludes 20 row(s) in 1 quarantined file(s)"
+    },
+    {
+      "check": "customer_rows_source_equals_loaded_plus_rejected",
+      "status": "PASS",
+      "expected": 315,
+      "actual": 315,
+      "detail": ""
+    },
+    {
+      "check": "amount_source_equals_loaded_plus_rejected",
+      "status": "PASS",
+      "expected": 8277361.49,
+      "actual": 8277361.49,
+      "detail": "loaded=370638.35 rejected=7906723.14 diff=0.0"
+    },
+    {
+      "check": "primary_key_unique_stg_transactions",
+      "status": "PASS",
+      "expected": 4785,
+      "actual": 4785,
+      "detail": "key=(transaction_id)"
+    },
+    {
+      "check": "primary_key_unique_customers",
+      "status": "PASS",
+      "expected": 312,
+      "actual": 312,
+      "detail": "key=(customer_id)"
+    },
+    {
+      "check": "primary_key_unique_customer_features",
+      "status": "PASS",
+      "expected": 1129,
+      "actual": 1129,
+      "detail": "key=(customer_id, as_of_date)"
+    },
+    {
+      "check": "primary_key_unique_churn_labels",
+      "status": "PASS",
+      "expected": 519,
+      "actual": 519,
+      "detail": "key=(customer_id, as_of_date)"
+    },
+    {
+      "check": "referential_integrity_transactions_to_customers",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "detail": ""
+    },
+    {
+      "check": "features_cover_all_eligible_customers",
+      "status": "PASS",
+      "expected": 1129,
+      "actual": 1129,
+      "detail": ""
+    },
+    {
+      "check": "point_in_time_feature_totals_match_recompute",
+      "status": "PASS",
+      "expected": "count90d=9815",
+      "actual": "count90d=9815",
+      "detail": ""
+    },
+    {
+      "check": "rejects_traceable_to_source",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "detail": ""
+    },
+    {
+      "check": "rejects_match_answer_key",
+      "status": "PASS",
+      "expected": 199,
+      "actual": 199,
+      "detail": "missing=[] unexpected=[]"
+    }
+  ]
+}
