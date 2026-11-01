@@ -1,6 +1,6 @@
 {
   "run": {
-    "run_id": "run_20261101T105543Z_19d084",
+    "run_id": "run_20261101T144547Z_b5ddc8",
     "mode": "inference",
     "status": "PARTIAL_SUCCESS",
     "files_seen": 20,
@@ -14,9 +14,9 @@
     "label_rows": 0,
     "reconciliation_status": "PASS",
     "error_message": null,
-    "ended_at": "2026-11-01 10:55:43",
-    "duration_seconds": 0.207,
-    "stage_timings": "{\"customers\": 0.04, \"transactions\": 0.025, \"features_labels\": 0.054, \"reconciliation\": 0.061}"
+    "ended_at": "2026-11-01 14:45:47",
+    "duration_seconds": 0.204,
+    "stage_timings": "{\"customers\": 0.034, \"transactions\": 0.016, \"features_labels\": 0.051, \"reconciliation\": 0.049}"
   },
   "status": "PASS",
   "checks": [
@@ -104,5 +104,12 @@
       "actual": 199,
       "detail": "missing=[] unexpected=[]"
     }
-  ]
+  ],
+  "totals": {
+    "customers": 312,
+    "stg_transactions": 4785,
+    "rejected_records": 199,
+    "customer_features": 1129,
+    "churn_labels": 519
+  }
 }

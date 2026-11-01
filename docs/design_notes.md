@@ -3,7 +3,7 @@
 ## 1. DuckDB + pandas instead of Spark / Postgres
 **Choice:** an embedded DuckDB file plus pandas for validation.
 **Why:** it runs anywhere with `pip install`, needs no server or credentials, and has real SQL
-with window filters. It easily handles 100K+ rows. Point-in-time logic is clearer in SQL than in loops.
+with window filters, and it is built for analytical workloads much larger than this sample. Point-in-time logic is clearer in SQL than in loops.
 **Trade-off:** one writer at a time, single machine. The SQL is close to standard, so it would
 port to Postgres, Snowflake or Spark SQL with small changes.
 

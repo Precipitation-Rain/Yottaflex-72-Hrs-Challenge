@@ -181,8 +181,12 @@ def run_reconciliation(con, cfg: dict) -> dict:
         checks.append({"check": "rejects_match_answer_key", "status": "SKIPPED",
                        "expected": None, "actual": None, "detail": "no answer key file"})
 
+    totals = {t: con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+              for t in ["customers", "stg_transactions", "rejected_records",
+                        "customer_features", "churn_labels"]}
+
     status = "FAIL" if any(c["status"] == "FAIL" for c in checks) else "PASS"
-    return {"status": status, "checks": checks}
+    return {"status": status, "checks": checks, "totals": totals}
 
 
 def write_report(result: dict, summary: dict, out_dir: Path) -> None:
@@ -198,9 +202,10 @@ def write_report(result: dict, summary: dict, out_dir: Path) -> None:
         f"- run_id: `{summary.get('run_id')}`",
         f"- run status: **{summary.get('status')}**",
         f"- reconciliation: **{result['status']}**",
-        f"- input rows: {summary.get('input_rows')} | loaded: {summary.get('loaded_rows')} "
-        f"| rejected: {summary.get('rejected_rows')}",
+        f"- this run: input rows: {summary.get('input_rows')} | loaded: {summary.get('loaded_rows')} "
+        f"| rejected: {summary.get('rejected_rows')} (0 means all files were already loaded)",
         f"- feature rows: {summary.get('feature_rows')} | label rows: {summary.get('label_rows')}",
+        "- table totals: " + " | ".join(f"{k}: {v}" for k, v in result.get("totals", {}).items()),
         "",
         "| check | status | expected | actual | detail |",
         "|---|---|---|---|---|",

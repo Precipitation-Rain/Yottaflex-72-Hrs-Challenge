@@ -1,10 +1,11 @@
 # Reconciliation report
 
-- run_id: `run_20261101T105543Z_19d084`
+- run_id: `run_20261101T144547Z_b5ddc8`
 - run status: **PARTIAL_SUCCESS**
 - reconciliation: **PASS**
-- input rows: 0 | loaded: 0 | rejected: 0
+- this run: input rows: 0 | loaded: 0 | rejected: 0 (0 means all files were already loaded)
 - feature rows: 312 | label rows: 0
+- table totals: customers: 312 | stg_transactions: 4785 | rejected_records: 199 | customer_features: 1129 | churn_labels: 519
 
 | check | status | expected | actual | detail |
 |---|---|---|---|---|

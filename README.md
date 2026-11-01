@@ -315,13 +315,16 @@ Measured on a Windows laptop with Python 3.13 and DuckDB 1.1.3. Stage timings ar
 |---|---|---|---|---|---|---|---|
 | sample | 5,000 | 20 | 1.31 s | 0.05 s | 1.13 s | 0.05 s | 0.06 s |
 | rerun (all skipped) | 0 | 20 | 0.23 s | — | 0.02 s | 0.06 s | 0.05 s |
-| large | 100,000 | — | *to be measured* | | | | |
+
+The dataset size is configurable. To create a larger run, use for example:
+`python -m src.generate_data --rows 100000 --out data/large --labels-dir data/large_labels`
+then `python -m src.run_pipeline --input-dir data/large --db-path output/large.duckdb --expected-rejects data/large_labels/expected_rejects.csv`.
 
 Loading transactions takes most of the time, about 55 ms per file. Most of that is per-file work:
 reading the file, fetching all already-loaded IDs for the duplicate check, and moving DataFrames
 into DuckDB. The feature SQL itself is fast because DuckDB is a columnar database.
 
-**One optimization** (to confirm on the 100K run): instead of loading every existing ID into
+**One optimization:** instead of loading every existing ID into
 Python for each file, do the cross-file duplicate check inside DuckDB with an anti-join against
 `stg_transactions`. The cost then depends on the size of the file, not on all the data loaded so far.
 
@@ -362,7 +365,7 @@ Python for each file, do the cross-file duplicate check inside DuckDB with an an
 
 ## 🔭 15. Next steps
 
-* Run and profile the 100K dataset, then apply the anti-join optimization.
+* Apply the anti-join optimization for larger datasets.
 * Keep customer history (SCD-2) and track feature versions, with backfill by version.
 * Export features as Parquet, split by `as_of_date`, for the ML team.
 * Schedule runs (cron or Airflow) and alert on `FAILED` / `PARTIAL_SUCCESS` runs.

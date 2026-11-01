@@ -46,4 +46,4 @@ tests/test_validation.py::test_schema_change_missing_column_quarantines_file PAS
 tests/test_validation.py::test_schema_change_extra_and_reordered_columns_still_load PASSED [ 97%]
 tests/test_validation.py::test_missing_customers_file_fails_run_with_reason PASSED [100%]
 
-============================= 40 passed in 28.68s =============================
+============================= 40 passed in 13.37s =============================
