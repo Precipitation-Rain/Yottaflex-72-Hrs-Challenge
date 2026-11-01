@@ -67,7 +67,7 @@ Valid customers. Same columns as the source plus lineage: `source_file`, `source
 | `run_id` | VARCHAR | run that rejected it |
 | `entity` | VARCHAR | `transaction`, `customer`, or `file` (whole file quarantined) |
 | `source_file`, `source_line_number` | | exact location of the bad record. For a `file` reject, line = 1 (header). |
-| `reject_reason` | VARCHAR | reason code (see README §6) |
+| `reject_reason` | VARCHAR | reason code (see [Reject reason codes](#reject-reason-codes)) |
 | `reject_detail` | VARCHAR | human-readable detail, e.g. which column was blank |
 | `raw_record` | VARCHAR (JSON) | original values as text: an object for normal rows, an array for malformed rows, the header for file rejects |
 | `rejected_at` | TIMESTAMP | |
@@ -133,6 +133,27 @@ Labels are only written when `max(txn_ts) >= D + window` (the window is fully ob
 | `reconciliation_status` | `PASS` / `FAIL` / `NOT_RUN` |
 | `stage_timings` | JSON, seconds per stage |
 | `error_message` | exception type and message when `FAILED` |
+
+---
+
+## Reject reason codes
+
+Rules are checked in this order. A record gets the **first** reason that fails.
+
+| code | rule |
+|---|---|
+| `malformed_row` | row has a different number of fields than the header |
+| `missing_required_field` | a required column is blank (detail says which one) |
+| `invalid_timestamp` / `invalid_date` | not ISO-8601 (`YYYY-MM-DDTHH:MM:SSZ`) / not `YYYY-MM-DD` |
+| `invalid_amount` | not a number (e.g. `12,50`, `$40`) |
+| `amount_out_of_range` | must be `> 0` and `<= 100000` (configurable) |
+| `invalid_txn_type` | not `purchase` or `refund` (case-sensitive) |
+| `invalid_merchant_category` | not in the allowed list |
+| `ingested_before_event` | `ingested_at < txn_ts` (impossible) |
+| `unknown_customer_id` | customer not in valid customers (referential integrity) |
+| `txn_before_signup` | `txn_ts < signup_date` |
+| `duplicate_transaction_id` / `duplicate_customer_id` | key already seen. First seen wins (earlier file, then lower line). |
+| `schema_mismatch` | file is missing required columns, so the whole file is quarantined |
 
 ---
 

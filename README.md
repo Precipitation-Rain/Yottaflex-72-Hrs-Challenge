@@ -1,336 +1,258 @@
-# Point-in-Time ML Feature Pipeline
+# 🧮 Point-in-Time ML Feature Pipeline
 
-A small, reproducible pipeline that turns raw **transaction data** into **ML features** for a
-customer-churn model. It is designed to **prevent target leakage**, follow explicit
-**point-in-time rules**, and use **one feature definition for both training and inference**.
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-1.1-FFF000?logo=duckdb&logoColor=black)
+![pandas](https://img.shields.io/badge/pandas-2.2-150458?logo=pandas&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-feature%20logic-336791?logo=postgresql&logoColor=white)
+![pytest](https://img.shields.io/badge/pytest-40%20passing-0A9EDC?logo=pytest&logoColor=white)
+![YAML](https://img.shields.io/badge/YAML-config-CB171E?logo=yaml&logoColor=white)
 
-Everything runs locally: Python + DuckDB (an embedded database file). No servers, no cloud, no credentials.
+A pipeline that turns raw **transaction data** into **ML features** for a churn model, with
+**no target leakage**, **safe reruns**, and **the same feature logic for training and inference**.
+It runs fully locally: no server, no cloud, no secrets.
 
 ---
 
-## 1. Quick start
+## 🛠️ Tech stack
+
+| Tool | Used for |
+|---|---|
+| 🐍 **Python** | Runs every step of the pipeline |
+| 📄 **csv module** | Reads raw files line by line, keeping line numbers and catching broken rows |
+| 🐼 **pandas** | Checks all rows of a file against each validation rule |
+| 🦆 **DuckDB** | Local database file that stores all tables and runs the SQL |
+| 🧾 **SQL** | Feature, label and reconciliation logic |
+| ⚙️ **PyYAML** | Reads settings from `config.yaml` |
+| ✅ **pytest** | 40 automated tests |
+| 📝 **logging** | Console output plus a log file for each run |
+
+---
+
+## 🚀 How to run
 
 ```bash
-# 1. setup (Python 3.10+)
 python -m venv .venv
-.venv\Scripts\activate            # Windows
-# source .venv/bin/activate       # macOS / Linux
+.venv\Scripts\activate              # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
 
-# 2. generate the 5,000-row sample (fixed seed => identical files every time)
-python -m src.generate_data --rows 5000 --seed 42
-
-# 3. run the pipeline (training mode: features + labels for config as_of_dates)
-python -m src.run_pipeline
-
-# 4. run it again: nothing is duplicated, all files are skipped
-python -m src.run_pipeline
-
-# 5. inference: same feature code, one snapshot date, no labels
-python -m src.run_pipeline --mode inference --as-of 2026-05-01
-
-# 6. look at the results
-python -m src.show_results        # runs sql/sample_queries.sql
-pytest -v                         # 40 automated tests
+python -m src.generate_data --rows 5000 --seed 42      # 1. create sample data
+python -m src.run_pipeline                             # 2. run pipeline (training)
+python -m src.run_pipeline                             # 3. run again -> no duplicates
+python -m src.run_pipeline --mode inference --as-of 2026-05-01   # 4. inference
+python -m src.show_results                             # 5. sample queries
+pytest -v                                              # 6. tests
 ```
 
-Exit codes: `0` success (incl. partial success), `1` run failed, `2` reconciliation failed.
-
-Useful flags: `--input-dir`, `--db-path`, `--output-dir`, `--expected-rejects`, `--force`
-(reprocess every file), `--config`.
-
----
-
-## 2. What problem it solves
-
-The model predicts: **"will this customer make no purchase in the next 30 days?"** at a
-snapshot date (`as_of_date`). For every `(customer_id, as_of_date)` the pipeline builds
-features such as purchases in the last 7/30/90 days, spend, refunds and days since the last purchase.
-
-The main risk is **target leakage**: accidentally using information from on or after the
-snapshot date. The model then looks great offline and fails in production.
-
-### Point-in-time rules
-
-For a feature row at `as_of_date = D`:
-
-| Rule | Why |
+| Flag | Meaning |
 |---|---|
-| use a transaction only if `txn_ts < D 00:00:00 UTC` | no future events |
-| **and** only if `ingested_at < D 00:00:00 UTC` | no *late-arriving* data that we didn't actually have at time D |
-| include a customer only if `signup_date < D` | customer must exist at time D |
-| labels look at `[D, D + 30 days)` and live in a **separate table** | features never read labels |
-| a label is produced only if data covers the full window (`max(txn_ts) >= D + 30d`) | no half-observed labels |
+| `--force` | Reprocess every file, even if already loaded |
+| `--input-dir`, `--db-path`, `--output-dir` | Override paths from `config.yaml` |
 
-All features are defined in **one SQL query** in [src/features.py](src/features.py).
-`--mode train` and `--mode inference` both call the same `build_features()` function. A test
-proves they return identical values.
+Exit codes: `0` = OK, `1` = run failed, `2` = reconciliation failed.
 
 ---
 
-## 3. Architecture
+## 🔄 How it works
 
 ```mermaid
 flowchart LR
-    G[generate_data.py<br/>seeded synthetic data] --> S[(data/sample<br/>customers.csv<br/>transactions_*.csv)]
-    G --> K[(data/labels<br/>expected_rejects.csv<br/>answer key)]
-    S --> I[ingest.py<br/>read as text, line numbers,<br/>schema check, file hash]
-    I --> V[validate.py<br/>types, rules, FK, dedup]
-    V -->|valid| STG[(stg_transactions<br/>customers)]
-    V -->|invalid| REJ[(rejected_records<br/>quarantine)]
-    I -->|schema mismatch| REJ
-    STG --> F[features.py<br/>point-in-time SQL]
-    F --> CF[(customer_features)]
-    STG --> L[features.py<br/>build_labels]
-    L --> CL[(churn_labels)]
-    CF --> TS[[training_set view]]
-    CL --> TS
-    STG & CF & REJ --> R[reconcile.py<br/>independent checks]
-    K --> R
-    R --> RPT[reconciliation_report.md/json]
-    RUN[run_pipeline.py] -. run log .-> PR[(pipeline_runs<br/>processed_files)]
+    A[📁 CSV files] --> B[📥 Ingest]
+    B --> C[🔍 Validate]
+    C -->|good rows| D[(🗄️ stg_transactions)]
+    C -->|bad rows| E[(🚫 rejected_records)]
+    D --> F[🧮 Features]
+    D --> G[🏷️ Labels]
+    F --> H[(customer_features)]
+    G --> I[(churn_labels)]
+    H & I --> J[📊 training_set]
+    D & H & E --> K[✅ Reconciliation report]
 ```
 
-**Flow of one run** ([src/run_pipeline.py](src/run_pipeline.py)):
-
-1. **Customers**: read `customers.csv`, validate, replace the `customers` table (full snapshot).
-2. **Transactions**: for each `transactions_*.csv` in sorted order:
-   - skip it if `processed_files` already has the same name and SHA-256 hash (rerun safety)
-   - check the header. Missing columns mean the whole file is **quarantined**. Extra or reordered columns are fine.
-   - validate rows, then **in one DB transaction** delete that file's old rows and insert the new valid rows, rejects and file status.
-3. **Features** for every configured `as_of_date` (or the single `--as-of` in inference). Old rows for those dates are replaced.
-4. **Labels** (train only) for dates whose 30-day future window is fully observed.
-5. **Reconciliation**, then CSV exports and a row in `pipeline_runs`.
-
-### Storage: DuckDB tables (`output/feature_store.duckdb`)
-
-| table | grain / key | purpose |
-|---|---|---|
-| `customers` | `customer_id` | valid customer snapshot |
-| `stg_transactions` | `transaction_id` | valid, deduplicated, typed transactions (append-only events) |
-| `rejected_records` | `reject_id` (= hash of entity+file+line) | every rejected record or file, with reason and raw values |
-| `processed_files` | `source_file` | file hash and status (LOADED / EMPTY / QUARANTINED), used for skip/retry |
-| `customer_features` | `(customer_id, as_of_date)` | **ML features** |
-| `churn_labels` | `(customer_id, as_of_date)` | **target**, kept separate |
-| `training_set` (view) | `(customer_id, as_of_date)` | features joined with labels |
-| `pipeline_runs` | `run_id` | run status, timings, counts, error |
-
-Full column-level documentation: [data_dictionary.md](data_dictionary.md).
+1. **📥 Ingest**: read `customers.csv` and each weekly `transactions_*.csv` as text, with line numbers.
+2. **🔍 Validate**: check every row. Good rows are saved, and bad rows go to the reject table with a reason.
+3. **🧮 Transform**: compute features for each customer at each snapshot date (`as_of_date`).
+4. **🏷️ Labels**: did the customer stop buying in the next 30 days? (stored separately)
+5. **📤 Publish and verify**: save the tables, run the reconciliation checks, write the reports and the run log.
 
 ---
 
-## 4. Project structure
+## 🔑 Key rules
+
+### ⏱️ Point-in-time (no target leakage)
+For a snapshot date **D**, a transaction is used only if:
+- ✅ it **happened** before D (`txn_ts < D`), **and**
+- ✅ it **arrived** before D (`ingested_at < D`). This blocks late data we didn't have yet.
+
+Also: customers count only if `signup_date < D`. Labels look **forward** `[D, D+30 days)` and live in
+a separate table, and a label is built only once the full 30 days of data exist.
+
+### 🔁 Training = inference
+All features are defined in **one SQL query** ([src/features.py](src/features.py)).
+Training and inference call the same function, and a test checks they return identical values.
+
+### ♻️ Safe reruns (idempotent)
+- Each file's **hash** is saved. If the file is unchanged on a rerun, it's skipped.
+- A file is loaded as **all-or-nothing** (one DB transaction): its old rows are deleted, then the new rows are inserted.
+- 💥 **Crash mid-run**: the failed file is rolled back, so you just rerun. The final result equals a clean run.
+- ✏️ **Corrected file** (same name, new content): it replaces its old rows.
+- 📅 **Backfill**: add dates to `as_of_dates` in `config.yaml` and rerun. Only those dates are rebuilt.
+
+### 🚫 Reject and quarantine
+- A bad row is saved to `rejected_records` with its **file, line number, reason and raw values**.
+- A file with a **missing column** is quarantined as a whole (status `PARTIAL_SUCCESS`).
+- Extra or reordered columns are OK, they are just logged.
+- Duplicates: the **first one seen wins**, and later copies are rejected.
+
+Checks: missing fields, bad dates and amounts, bad categories, unknown customer, transaction before signup,
+arrival before the event happened, duplicates, malformed rows, schema change.
+👉 Full list of reason codes: [data_dictionary.md](data_dictionary.md#reject-reason-codes)
+
+---
+
+## 🗄️ Output tables
+
+Stored in `output/feature_store.duckdb` and also exported as CSV to `output/`.
+
+| Table | One row = | Purpose |
+|---|---|---|
+| `customers` | a customer | valid customers |
+| `stg_transactions` | a transaction | clean, deduplicated transactions |
+| `rejected_records` | a bad row or file | 🚫 quarantine with the reason |
+| `processed_files` | a file | hash and status, used for skipping on rerun |
+| `customer_features` | customer + date | ⭐ **ML features** |
+| `churn_labels` | customer + date | 🏷️ target (kept separate) |
+| `training_set` (view) | customer + date | features + label |
+| `pipeline_runs` | a run | 📈 run log |
+
+**Features:** `tenure_days`, `purchase_count_7d/30d/90d`, `purchase_amount_30d`,
+`avg_purchase_amount_30d`, `max_purchase_amount_90d`, `refund_count_90d`,
+`distinct_categories_30d`, `days_since_last_purchase`.
+👉 Column details: [data_dictionary.md](data_dictionary.md)
+
+---
+
+## 📈 Logging and monitoring
+
+Every run adds a row to `pipeline_runs` with:
+`run_id` · status (`SUCCESS` / `PARTIAL_SUCCESS` / `FAILED`) · start/end time · input / loaded / rejected
+rows · files skipped / quarantined · time per stage · error message.
+
+There is also a log file per run in `output/logs/`.
+
+---
+
+## 🧪 Sample data
+
+`generate_data.py` creates **5,000 transactions** (fixed seed, so the same files every time) in **20 weekly files**:
+
+| ✅ Normal | ⚠️ Edge cases | ❌ Deliberately bad |
+|---|---|---|
+| 4,785 valid rows | boundary amounts (`0.01`, `100000`) | 60 duplicates |
+| out-of-order rows | transaction exactly at the snapshot time | blank fields, bad dates and amounts |
+| ~5% late arrivals | transaction exactly at signup | unknown customers |
+| | empty file | transactions before signup |
+| | | malformed rows |
+| | | 1 file with a changed schema |
+
+The list of bad rows (the **answer key**) is kept separately in `data/labels/expected_rejects.csv`,
+never inside the input files.
+
+---
+
+## ✅ Reconciliation (proof it's correct)
+
+Each run writes `output/reconciliation_report.md`. The raw files are re-read independently and the results compared:
+
+- 🔢 source rows = loaded + rejected
+- 💰 source amount total = loaded total + rejected total
+- 🔑 no duplicate keys in any table
+- 🔗 every transaction has a valid customer
+- 👥 one feature row per eligible customer per date
+- ⏱️ feature totals match a separate point-in-time query
+- 🎯 rejects match the answer key exactly
+
+**Result on the sample: all 12 checks PASS** ✅ (199 expected rejects = 199 actual).
+
+---
+
+## 🧪 Tests
+
+`pytest -v` runs **40 tests, all passing** ✅ in about 15 s. Evidence: [output/test_results.txt](output/test_results.txt).
+
+They cover the happy path, empty and 0-byte files, malformed rows, nulls, 12 kinds of invalid values,
+duplicates, unknown customers, schema change, reruns, crash and retry, a corrected file, late data,
+**no leakage**, the snapshot boundary, signup rules, labels, and train = inference.
+👉 Mapping of each test to its requirement: [docs/design_notes.md](docs/design_notes.md#test-coverage)
+
+---
+
+## ⚡ Performance
+
+| Run | Rows | Time |
+|---|---|---|
+| First run | 5,000 | ~1.3 s |
+| Rerun (all skipped) | 0 | ~0.2 s |
+| Large run | 100,000 | ⏳ to be measured |
+
+🐢 **Bottleneck:** loading transactions (~55 ms per file). For each file, every already-loaded ID
+is pulled into Python for the duplicate check.
+💡 **Optimization:** do that duplicate check inside DuckDB (anti-join) instead.
+
+---
+
+## 🏷️ Naming conventions
+
+- `snake_case` for all tables and columns. Staging tables start with `stg_`.
+- Timestamps are ISO-8601 UTC (`2026-02-25T10:00:00Z`). Dates are `YYYY-MM-DD`.
+- `transaction_id` and `customer_id` come from the source. `reject_id` = hash of file + line (the same on every rerun).
+- `run_id` = `run_<UTC time>_<random>`. Every row stores `run_id`, `source_file` and `source_line_number`.
+
+---
+
+## 📂 Project structure
 
 ```
-├── README.md                 this file
-├── data_dictionary.md        every table and column
-├── docs/design_notes.md      design choices and trade-offs
-├── config.yaml               paths, as_of_dates, label window, validation limits
-├── requirements.txt / pytest.ini
+├── config.yaml            ⚙️ settings (paths, dates, rules)
 ├── src/
-│   ├── generate_data.py      synthetic data + answer key (seeded)
-│   ├── config.py             config loading
-│   ├── schemas.py            source schemas, reject codes, DDL
-│   ├── ingest.py             CSV reading, line numbers, schema check, hashing
-│   ├── validate.py           validation rules -> (valid, rejects)
-│   ├── features.py           point-in-time features + labels (single definition)
-│   ├── publish.py            atomic, idempotent writes; run log
-│   ├── reconcile.py          independent reconciliation checks + report
-│   ├── run_pipeline.py       CLI / orchestration
-│   └── show_results.py       runs sql/sample_queries.sql
+│   ├── generate_data.py   🎲 sample data + answer key
+│   ├── config.py          ⚙️ reads config.yaml
+│   ├── schemas.py         📐 columns, reject codes, tables
+│   ├── ingest.py          📥 reads CSV files
+│   ├── validate.py        🔍 row checks
+│   ├── features.py        🧮 features + labels (SQL)
+│   ├── publish.py         📤 database writes
+│   ├── reconcile.py       ✅ correctness checks
+│   ├── run_pipeline.py    ▶️ main entry point
+│   └── show_results.py    📊 sample queries
 ├── sql/sample_queries.sql
-├── tests/                    pytest suite (40 tests)
-├── data/sample/              INPUT: customers.csv + 20 transaction files (5,000 rows)
-├── data/labels/              ANSWER KEY (kept separate): expected_rejects.csv, manifest
-└── output/                   feature store, CSV exports, reports, logs
+├── tests/                 🧪 40 tests
+├── data/sample/           📁 input data
+├── data/labels/           🎯 answer key
+├── output/                📦 results, reports
+├── data_dictionary.md     📖 tables + columns
+└── docs/design_notes.md   🧠 design choices + trade-offs
 ```
 
 ---
 
-## 5. Sample data
+## 📌 Assumptions
 
-`python -m src.generate_data --rows 5000 --seed 42` writes **exactly 5,000 transaction rows**
-across weekly delivery files (grouped by `ingested_at`, shuffled inside each file so the data
-arrives out of order). It contains:
+- Transactions are **events that never change**. A second copy is a duplicate, and corrections come as refunds.
+- Amounts are positive and in a single currency.
+- Files arrive in name order (weekly).
+- `customers.csv` is a full snapshot. If it's missing or broken, the run stops.
+- Snapshots are taken at midnight UTC.
 
-| kind | count (5k) | expected result |
-|---|---|---|
-| normal valid transactions | 4,785 | loaded |
-| boundary values: amount `0.01` and `100000.00`, txn exactly at `2026-03-01T00:00:00Z`, txn known exactly at the snapshot, txn exactly at signup | 5 | loaded (and excluded from that snapshot where relevant) |
-| late arrivals (delivered 2–10 days after the event) | ~5% | loaded, `is_late = true`, hidden from snapshots before delivery |
-| exact duplicates (same file and cross-file re-sends) | 60 | `duplicate_transaction_id` |
-| blank required fields | 25 | `missing_required_field` |
-| bad timestamps / amounts / out-of-range / bad type / bad category | 15/10/15/10/10 | specific codes |
-| ingested before the event happened | 10 | `ingested_before_event` |
-| unknown customer (invalid reference key) | 20 | `unknown_customer_id` |
-| transaction before customer signup | 10 | `txn_before_signup` |
-| malformed rows (wrong number of fields) | 10 | `malformed_row` |
-| schema change file (`amount` renamed to `amount_usd`) | 1 file, 20 rows | file `QUARANTINED` |
-| empty batch (header only) | 1 file | `EMPTY`, no error |
-| bad customer rows (duplicate, bad date, blank id) | 3 | customer rejects |
+## ⚠️ Limitations
 
-The input files contain **no "is_bad" flag**. The generator writes the expected outcome to
-`data/labels/expected_rejects.csv`, and reconciliation compares it with the real rejects
-(**199 expected = 199 actual, 0 missing, 0 unexpected**).
+- Customers have no change history (they are a snapshot).
+- Rows from a source file that is deleted later are not removed.
+- A very late arrival after a label is built could change that label.
+- DuckDB allows only one writer, so don't run two pipelines at once.
 
----
+## 🔭 Next steps
 
-## 6. Data quality & reject path
-
-Rules run in a fixed order and a record gets the **first** reason that fails (deterministic).
-
-| code | rule |
-|---|---|
-| `malformed_row` | row has a different number of fields than the header |
-| `missing_required_field` | a required column is blank (detail says which one) |
-| `invalid_timestamp` / `invalid_date` | not ISO-8601 (`YYYY-MM-DDTHH:MM:SSZ`) / not `YYYY-MM-DD` |
-| `invalid_amount` | not a number (e.g. `12,50`, `$40`) |
-| `amount_out_of_range` | must be `> 0` and `<= 100000` (configurable) |
-| `invalid_txn_type` | not in `purchase, refund` (case-sensitive) |
-| `invalid_merchant_category` | not in the allowed list |
-| `ingested_before_event` | `ingested_at < txn_ts` (impossible) |
-| `unknown_customer_id` | customer not in valid customers (referential integrity) |
-| `txn_before_signup` | `txn_ts < signup_date` |
-| `duplicate_transaction_id` / `duplicate_customer_id` | key already seen. **First seen wins** (earlier file, then lower line). A bad first copy does not block a good later copy. |
-| `schema_mismatch` | file is missing required columns, so the **whole file** is quarantined |
-
-Every reject stores `source_file`, `source_line_number`, `raw_record` (original values as
-JSON), `run_id`, reason and detail, so it can be traced back to the exact line.
-
----
-
-## 7. Idempotency, retry, restart, backfill
-
-| scenario | behaviour |
-|---|---|
-| **rerun same input** | every file is skipped (same name + hash). Tables are unchanged. |
-| **`--force` rerun** | each file's old rows are deleted and reloaded in one transaction, giving the same result with no duplicates |
-| **crash mid-run** | files already committed stay committed. The failing file is **rolled back completely** (nothing half-loaded). Run is logged `FAILED` with the error. |
-| **retry after crash** | just run again: committed files are skipped, the rest are processed. The final state equals a clean run (tested). |
-| **corrected file re-delivered** (same name, new content) | hash changes, so that file is replaced (old rows and rejects removed first) |
-| **quarantined file** | stays quarantined, and every run reports `PARTIAL_SUCCESS` until a fixed file (new hash) arrives |
-| **backfill new snapshot dates** | add dates to `features.as_of_dates` (or `--mode inference --as-of D`) and rerun. Only those dates are replaced. |
-| **late data arrives** | it gets loaded. Recomputing a *past* snapshot still ignores it (because `ingested_at >= D`), so historical training rows stay reproducible. |
-
----
-
-## 8. Observability
-
-* **`pipeline_runs`** has one row per run: `run_id`, `mode`, `status`
-  (`RUNNING / SUCCESS / PARTIAL_SUCCESS / FAILED`), start/end time, duration, files
-  seen/processed/skipped/quarantined, input/loaded/rejected rows, feature/label rows,
-  reconciliation status, per-stage timings (JSON), and `error_message`.
-* **`processed_files`** shows per-file status and counts.
-* **Logs**: console plus `output/logs/<run_id>.log`, with per-file counts, late-row counts,
-  quarantine errors and skipped label dates.
-* **Exports** in `output/`: `customer_features.csv`, `training_set.csv`,
-  `rejected_records.csv`, `processed_files.csv`, `pipeline_runs.csv`,
-  `inference_features_<date>.csv`, `sample_query_results.md`.
-
----
-
-## 9. Reconciliation (proof of correctness)
-
-`output/reconciliation_report.md` is written on every training run. The source-side numbers are
-recomputed by **re-reading the raw files with plain Python**, independent of the pipeline code:
-
-| check | meaning |
-|---|---|
-| row counts | per file: source rows = loaded + rejected (quarantined rows are reported separately) |
-| customer rows | source rows = loaded + rejected |
-| amount aggregate | sum(amount) in source = loaded sum + rejected sum |
-| primary keys | no duplicates in `stg_transactions`, `customers`, `customer_features`, `churn_labels` |
-| referential integrity | every loaded transaction has a customer |
-| coverage | exactly one feature row per eligible customer per snapshot |
-| point-in-time recompute | per snapshot, feature totals equal an independent "strictly before D" count |
-| traceability | every reject has file, line and reason |
-| answer key | rejects equal `data/labels/expected_rejects.csv` exactly |
-
-Current sample result: **all 12 checks PASS** (see [output/reconciliation_report.md](output/reconciliation_report.md)).
-
----
-
-## 10. Tests
-
-`pytest -v` runs 40 tests in about 12 s. Each test builds its own tiny input in a temp folder,
-so the expected values are hand-checkable.
-
-| requirement | test(s) |
-|---|---|
-| happy path | `test_happy_path_loads_everything`, `test_feature_values_are_exact` |
-| empty input | `test_empty_batch_header_only`, `test_no_transaction_files_and_zero_byte_file` |
-| malformed records | `test_malformed_rows_are_rejected_with_line_numbers` |
-| missing required field / nulls | `test_missing_required_fields_and_nullable_columns`, `test_bad_customer_rows` |
-| bad values (12 cases) | `test_invalid_values_are_rejected[...]`, `test_amount_boundaries_are_accepted` |
-| duplicate key/event | `test_duplicates_within_and_across_files`, `test_invalid_first_copy_does_not_block_valid_second_copy` |
-| invalid reference key | `test_invalid_values_are_rejected[override11-unknown_customer_id]` |
-| unexpected schema change | `test_schema_change_missing_column_quarantines_file`, `test_schema_change_extra_and_reordered_columns_still_load` |
-| rerun same input | `test_rerun_same_input_creates_no_duplicates` |
-| partial failure + retry | `test_partial_failure_then_retry_matches_clean_run` |
-| corrected file | `test_corrected_file_replaces_previous_version` |
-| late / out-of-order data | `test_late_arriving_txn_is_invisible_until_it_was_ingested` |
-| **domain: no target leakage** | `test_no_target_leakage_future_data_does_not_change_features` |
-| **domain: snapshot boundary** | `test_txn_exactly_at_as_of_is_excluded` |
-| **domain: signup rules** | `test_signup_rules` |
-| **domain: labels & immature windows** | `test_labels_look_forward_and_skip_immature_windows` |
-| **train/inference consistency** | `test_training_and_inference_produce_identical_features` |
-| observability | `test_run_log_records_metrics`, `test_missing_customers_file_fails_run_with_reason` |
-| reconciliation catches errors | `test_reconciliation_detects_duplicate_keys[...]` |
-| reproducibility | `test_same_seed_same_files`, `test_end_to_end_on_generated_data_matches_answer_key` |
-
-Test output is saved in [output/test_results.txt](output/test_results.txt).
-
----
-
-## 11. Performance
-
-Measured on a Windows laptop with Python 3.13 and DuckDB 1.1.3 (stage timings are stored in `pipeline_runs.stage_timings`):
-
-| dataset | rows | files | total | customers | transactions | features+labels | reconciliation |
-|---|---|---|---|---|---|---|---|
-| sample | 5,000 | 20 | 1.31 s | 0.05 s | 1.13 s | 0.05 s | 0.06 s |
-| rerun (all skipped) | 0 | 20 | 0.23 s | — | 0.02 s | 0.06 s | 0.05 s |
-| large | 100,000 | — | *to be measured in the next step* | | | | |
-
-Loading transactions takes most of the time, about 55 ms per file. Most of that is per-file overhead
-(reading the file, fetching the already-loaded ID set for the duplicate check,
-registering DataFrames). The feature SQL itself is fast because DuckDB is columnar.
-
-**One reasonable optimization** (to be confirmed on the 100K run): stop loading the full
-existing-ID set into Python for every file. Instead, do the cross-file duplicate check inside
-DuckDB with an anti-join against `stg_transactions`. That makes it O(file) instead of
-O(all loaded rows) per file.
-
----
-
-## 12. Naming conventions
-
-* Tables and columns are `snake_case`. Staging tables use the `stg_` prefix.
-* Timestamps are ISO-8601 UTC in source (`2026-02-25T10:00:00Z`) and stored as UTC `TIMESTAMP`. Dates are `YYYY-MM-DD`.
-* IDs are stable and deterministic. `transaction_id` and `customer_id` come from the source. `reject_id = sha1(entity|source_file|line)[:16]`, so a bad line always gets the same ID across reruns. The feature key is `(customer_id, as_of_date)`.
-* `run_id = run_<UTC start>_<6 hex>`, which is unique per execution and stored on every row written.
-* `source_file` holds the file name only (no machine path), and `source_line_number` is the physical line in the file (header = 1).
-
-## 13. Assumptions
-
-* Transactions are **immutable events**. A re-sent transaction is a duplicate, not an update. Corrections come as `refund` events.
-* `amount` is a positive value in a single currency. Refunds are also positive and are identified by `txn_type`.
-* Source files are delivered in name order (weekly, by ingestion date). "First seen" means first in that order.
-* `customers.csv` is a full snapshot each run. A broken customers file stops the run, because nothing can be validated without it.
-* Feature snapshots are taken at midnight UTC.
-
-## 14. Known limitations
-
-* Customers are a snapshot, not history (no SCD-2). If a customer row changes, old features are not re-versioned.
-* A source file that is **deleted** from the input folder keeps its rows (no "tombstones").
-* Label maturity uses `max(txn_ts)`. Data arriving very late after that could still change a label.
-* DuckDB allows a single writer, so two pipeline runs must not run at the same time.
-* Primary keys are enforced by pipeline logic plus reconciliation checks, not by DB constraints (see design notes).
-
-## 15. Next steps
-
-* Run and profile the 100K dataset, then apply the anti-join optimization.
-* SCD-2 history for customers, and feature-version tracking with backfill by version.
-* Parquet export partitioned by `as_of_date` for the ML team.
-* Scheduling (cron/Airflow) plus alerting on `FAILED` / `PARTIAL_SUCCESS` runs.
-* Data-quality thresholds (for example, fail the run if more than 5% of a file is rejected).
+- Run and profile 100K rows, then apply the optimization above.
+- Keep customer history (SCD-2).
+- Export features as Parquet.
+- Schedule runs (cron / Airflow) and alert on failures.

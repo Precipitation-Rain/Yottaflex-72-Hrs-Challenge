@@ -64,5 +64,30 @@ Each rule is a boolean mask over the whole file, and the first failing rule wins
 it fast and deterministic, and each rule is easy to read in isolation.
 
 ## Limitations to be aware of
-See README §14: customers snapshot (no history), deleted source files are not removed, label
-maturity based on `max(txn_ts)`, single writer.
+See the README "Limitations" section: customers snapshot (no history), deleted source files are
+not removed, label maturity based on `max(txn_ts)`, single writer.
+
+## Test coverage
+
+| requirement | test(s) |
+|---|---|
+| happy path | `test_happy_path_loads_everything`, `test_feature_values_are_exact` |
+| empty input | `test_empty_batch_header_only`, `test_no_transaction_files_and_zero_byte_file` |
+| malformed records | `test_malformed_rows_are_rejected_with_line_numbers` |
+| missing required field / nulls | `test_missing_required_fields_and_nullable_columns`, `test_bad_customer_rows` |
+| bad values (12 cases) | `test_invalid_values_are_rejected[...]`, `test_amount_boundaries_are_accepted` |
+| duplicate key/event | `test_duplicates_within_and_across_files`, `test_invalid_first_copy_does_not_block_valid_second_copy` |
+| invalid reference key | `test_invalid_values_are_rejected[override11-unknown_customer_id]` |
+| unexpected schema change | `test_schema_change_missing_column_quarantines_file`, `test_schema_change_extra_and_reordered_columns_still_load` |
+| rerun same input | `test_rerun_same_input_creates_no_duplicates` |
+| partial failure + retry | `test_partial_failure_then_retry_matches_clean_run` |
+| corrected file | `test_corrected_file_replaces_previous_version` |
+| late / out-of-order data | `test_late_arriving_txn_is_invisible_until_it_was_ingested` |
+| domain: no target leakage | `test_no_target_leakage_future_data_does_not_change_features` |
+| domain: snapshot boundary | `test_txn_exactly_at_as_of_is_excluded` |
+| domain: signup rules | `test_signup_rules` |
+| domain: labels & immature windows | `test_labels_look_forward_and_skip_immature_windows` |
+| train/inference consistency | `test_training_and_inference_produce_identical_features` |
+| observability | `test_run_log_records_metrics`, `test_missing_customers_file_fails_run_with_reason` |
+| reconciliation catches errors | `test_reconciliation_detects_duplicate_keys[...]` |
+| reproducibility | `test_same_seed_same_files`, `test_end_to_end_on_generated_data_matches_answer_key` |
